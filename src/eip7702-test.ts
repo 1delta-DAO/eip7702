@@ -1,4 +1,4 @@
-import { type Abi } from "viem";
+import { zeroAddress, type Abi } from "viem";
 import { walletClient, eoa, publicClient } from "./config";
 import fs from "fs";
 import { stringifyBigInt } from "./utils";
@@ -37,20 +37,7 @@ export async function initializeAccount() {
   console.log("Transaction confirmed in block:", receipt.blockNumber);
 }
 
-export async function testEIP7702() {
-  console.log("Starting EIP-7702 test...");
-
-  let contractAddress: `0x${string}`;
-  const contractDetails = getContractDetails();
-  contractAddress = contractDetails.address as `0x${string}`;
-  console.log("Using existing contract at:", contractAddress);
-
-  console.log(`\nEOA Address: ${eoa.address}`);
-  console.log(`Contract Address: ${contractAddress}\n`);
-
-  // await setContractCode(contractAddress);
-  await initializeAccount();
-
+export async function readaVars() {
   // read
   console.log("\nRead accountId");
   const accountId = await publicClient.readContract({
@@ -68,6 +55,8 @@ export async function testEIP7702() {
   });
   console.log(`Is initialized: ${isInitialized}`);
 }
+
+export async function executeOnEoaTest() {}
 
 export async function setContractCode(contractAddress: `0x${string}`) {
   console.log("Sign authorization to set contract address");
@@ -90,6 +79,52 @@ export async function setContractCode(contractAddress: `0x${string}`) {
     functionName: "initializeAccount",
     args: [initData],
     abi: nexusAccountAbi as Abi,
+  });
+
+  console.log(`Transaction hash: ${hash}`);
+
+  console.log("Waiting for transaction confirmation...");
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  console.log("Transaction confirmed in block:", receipt.blockNumber);
+}
+
+export async function setContractCodeNoInit(contractAddress: `0x${string}`) {
+  console.log("Sign authorization to set contract address");
+  const authorization = await walletClient.signAuthorization({
+    account: eoa,
+    contractAddress,
+    executor: "self",
+  });
+
+  console.log("Authorization signed:");
+  console.log(JSON.stringify(authorization, stringifyBigInt));
+
+  console.log("\nSend EIP-7702 transaction to set contract code");
+
+  const hash = await walletClient.sendTransaction({
+    authorizationList: [authorization],
+    to: eoa.address,
+    account: eoa,
+  });
+
+  console.log(`Transaction hash: ${hash}`);
+
+  console.log("Waiting for transaction confirmation...");
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  console.log("Transaction confirmed in block:", receipt.blockNumber);
+}
+
+export async function resetCode() {
+  console.log("Resetting the code of the eoa");
+  const authorization = await walletClient.signAuthorization({
+    account: eoa,
+    contractAddress: zeroAddress,
+    executor: "self",
+  });
+  const hash = await walletClient.sendTransaction({
+    authorizationList: [authorization],
+    to: eoa.address,
+    account: eoa,
   });
 
   console.log(`Transaction hash: ${hash}`);
