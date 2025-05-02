@@ -3,66 +3,61 @@ import {
   MODULE_ADDRESS,
   NEXUS_BOOTSTRAP,
 } from "./consts";
-import { eoa } from "./config";
+import { owner } from "./config";
+import { zeroAddress } from "viem";
 import {
-  zeroAddress,
-  type Hex,
-  type Address,
-  encodeAbiParameters,
-  encodeFunctionData,
-  type Abi,
-} from "viem";
-import { bootstrapAbi } from "./abis";
-
-export interface BootstrapConfig {
-  module: Address;
-  data: Hex;
-}
-
-export interface BootstrapPreValidationHookConfig {
-  hookType: bigint;
-  module: Address;
-  data: Hex;
-}
+  getInitData,
+  type GenericModuleConfig,
+  type PrevalidationHookModuleConfig,
+} from "@biconomy/abstractjs";
 
 export function createInitData() {
-  const owner = eoa.address;
-
-  const validators: BootstrapConfig[] = [
+  const validators: GenericModuleConfig[] = [
     {
       module: NEXUS_K1_VALIDATOR_ADDRESS,
-      data: owner,
+      data: owner.address,
     },
   ];
 
-  const executors: BootstrapConfig[] = [
+  const executors: GenericModuleConfig[] = [
     {
       module: MODULE_ADDRESS,
       data: "0x",
     },
   ];
 
-  const hook: BootstrapConfig = {
+  const hook: GenericModuleConfig = {
     module: zeroAddress,
     data: "0x",
   };
 
-  const preValidationHooks: BootstrapPreValidationHookConfig[] = [];
+  const preValidationHooks: PrevalidationHookModuleConfig[] = [];
 
-  const fallbacks: BootstrapConfig[] = [];
+  const fallbacks: GenericModuleConfig[] = [];
 
-  return encodeAbiParameters(
-    [
-      { name: "bootstrap", type: "address" },
-      { name: "initData", type: "bytes" },
-    ],
-    [
-      NEXUS_BOOTSTRAP,
-      encodeFunctionData({
-        abi: bootstrapAbi as Abi,
-        functionName: "initNexusNoRegistry",
-        args: [validators, executors, hook, fallbacks, preValidationHooks],
-      }),
-    ]
-  );
+  return getInitData({
+    defaultValidator: validators[0]!,
+    prevalidationHooks: preValidationHooks,
+    validators,
+    executors,
+    hook,
+    fallbacks,
+    registryAddress: zeroAddress,
+    bootStrapAddress: NEXUS_BOOTSTRAP,
+  });
+
+  // return encodeAbiParameters(
+  //   [
+  //     { name: "bootstrap", type: "address" },
+  //     { name: "initData", type: "bytes" },
+  //   ],
+  //   [
+  //     NEXUS_BOOTSTRAP,
+  //     encodeFunctionData({
+  //       abi: bootstrapAbi as Abi,
+  //       functionName: "initNexusNoRegistry",
+  //       args: [validators, executors, hook, fallbacks, preValidationHooks],
+  //     }),
+  //   ]
+  // );
 }

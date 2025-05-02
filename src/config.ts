@@ -1,3 +1,4 @@
+import { toNexusSmartAccount } from "permissionless/accounts";
 import {
   createPublicClient,
   createWalletClient,
@@ -7,12 +8,12 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 
-export const EOA_PRIVATE_KEY = process.env.PK1! as Address;
+export const OWNER_PRIVATE_KEY = process.env.PK1! as Address;
 
-export const eoa = privateKeyToAccount(EOA_PRIVATE_KEY);
+export const owner = privateKeyToAccount(OWNER_PRIVATE_KEY);
 
 export const walletClient = createWalletClient({
-  account: eoa,
+  account: owner,
   chain: sepolia,
   transport: http(sepolia.rpcUrls.default.http[0]),
 });

@@ -4,8 +4,9 @@ import {
   readaVars,
   executeOnEoaTest,
   initializeAccount,
+  setContractCode,
 } from "./src/eip7702-test";
-
+import { NEXUS_ACCOUNT_IMPLEMENTATION } from "./src/consts";
 async function main() {
   const args = process.argv.slice(2);
   let setContract,
@@ -88,11 +89,7 @@ async function main() {
   }
 
   if (init) {
-    if (!setContract) {
-      // then first set the code
-      await setContractCodeNoInit("0x000000004F43C49e93C970E84001853a70923B03");
-    }
-    await initializeAccount();
+    await setContractCode(NEXUS_ACCOUNT_IMPLEMENTATION);
   }
 }
 
