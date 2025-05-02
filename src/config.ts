@@ -1,4 +1,3 @@
-import { toNexusSmartAccount } from "permissionless/accounts";
 import {
   createPublicClient,
   createWalletClient,

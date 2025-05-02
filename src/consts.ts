@@ -1,12 +1,23 @@
 import type { Address } from "viem";
 
-export const NEXUS_BOOTSTRAP =
-  "0x00000000D3254452a909E4eeD47455Af7E27C289" as Address;
-export const NEXUS_ACCOUNT_IMPLEMENTATION =
-  "0x000000004F43C49e93C970E84001853a70923B03" as Address;
-export const NEXUS_K1_VALIDATOR_ADDRESS =
-  "0x0000002D6DB27c52E3C11c1Cf24072004AC75cBa" as Address;
-export const NEXUS_K1_VALIDATOR_FACTORY_ADDRESS =
-  "0x2828A0E0f36d8d8BeAE95F00E2BbF235e4230fAc" as Address;
-export const MODULE_ADDRESS =
-  "0xb5f43b518e2bae4e34e8e3f0c7d91d172531c517" as Address;
+export const KERNEL_V3_3 =
+  "0xd6CEDDe84be40893d153Be9d467CD6aD37875b28" as Address;
+
+export const VALIDATOR_TYPE = {
+  SUDO: "0x00",
+  SECONDARY: "0x01",
+  PERMISSION: "0x02",
+} as const;
+export enum VALIDATOR_MODE {
+  DEFAULT = "0x00",
+  ENABLE = "0x01",
+}
+export enum CALL_TYPE {
+  SINGLE = "0x00",
+  BATCH = "0x01",
+  DELEGATE_CALL = "0xFF",
+}
+export enum EXEC_TYPE {
+  DEFAULT = "0x00",
+  TRY_EXEC = "0x01",
+}

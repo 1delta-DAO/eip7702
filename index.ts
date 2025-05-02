@@ -1,28 +1,33 @@
-import {
-  resetCode,
-  setContractCodeNoInit,
-  readaVars,
-  executeOnEoaTest,
-  initializeAccount,
-  setContractCode,
-} from "./src/eip7702-test";
-import { NEXUS_ACCOUNT_IMPLEMENTATION } from "./src/consts";
+import { resetCode, setContractCodeNoInit } from "./src/eip7702-test";
+import { KERNEL_V3_3 } from "./src/consts";
+import { owner, publicClient } from "./src/config";
+
+async function getContractCode() {
+  const code = await publicClient.getCode({
+    address: owner.address,
+  });
+  return code;
+}
+
+async function isEIP7702Account() {
+  const code = await getContractCode();
+
+  if (code && code.startsWith("0xef0100")) {
+    return true;
+  }
+  return false;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   let setContract,
-    resetContract,
-    readTest,
-    writeTest,
-    init = false;
+    resetContract = false;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
     if (arg === "--all" || arg === "-a") {
       setContract = true;
       resetContract = true;
-      readTest = true;
-      writeTest = true;
-      init = true;
 
       break;
     }
@@ -36,60 +41,33 @@ async function main() {
       resetContract = true;
       continue;
     }
-
-    if (arg === "--read-test" || arg === "-rt") {
-      readTest = true;
-      continue;
-    }
-
-    if (arg === "--write-test" || arg === "-wt") {
-      writeTest = true;
-      continue;
-    }
-
-    if (arg === "--init" || "-i") {
-      init = true;
-      continue;
-    }
   }
 
   // execute according to conditions from args
   if (setContract) {
-    console.log(
-      "Setting EOA code to 0x000000004F43C49e93C970E84001853a70923B03"
-    );
-    await setContractCodeNoInit("0x000000004F43C49e93C970E84001853a70923B03");
+    const currentCode = await getContractCode();
+    if (
+      currentCode &&
+      currentCode.toLowerCase() ===
+        `0xef0100${KERNEL_V3_3.slice(2).toLowerCase()}`
+    ) {
+      console.log(
+        "The code is already points to the kernel, no further tx is required"
+      );
+    } else {
+      console.log(`Setting EOA code to ${KERNEL_V3_3}`);
+      await setContractCodeNoInit(KERNEL_V3_3);
+    }
   }
 
   if (resetContract) {
     console.log("Reset the code of the EOA");
-    if (!setContract) {
-      // then first set the code
-      await setContractCodeNoInit("0x000000004F43C49e93C970E84001853a70923B03");
+    const haveCode = await isEIP7702Account();
+    if (haveCode) {
+      await resetCode();
+    } else {
+      console.log("EOA is not an EIP-7702 account");
     }
-    await resetCode();
-  }
-
-  if (readTest) {
-    if (!setContract) {
-      // then first set the code
-      await setContractCodeNoInit("0x000000004F43C49e93C970E84001853a70923B03");
-    }
-    console.log("read from the code of the EOA");
-    await readaVars();
-  }
-
-  if (writeTest) {
-    if (!setContract) {
-      // then first set the code
-      await setContractCodeNoInit("0x000000004F43C49e93C970E84001853a70923B03");
-    }
-    console.log("Execute on the code of EOA");
-    await executeOnEoaTest();
-  }
-
-  if (init) {
-    await setContractCode(NEXUS_ACCOUNT_IMPLEMENTATION);
   }
 }
 
