@@ -1,27 +1,19 @@
-import { resetCode, setContractCodeNoInit } from "./src/eip7702-test";
+import {
+  resetCode,
+  setContractCodeNoInit,
+  batchTest as execBatchTest,
+  user2SendTxOnOwner,
+} from "./src/eip7702-test";
 import { KERNEL_V3_3 } from "./src/consts";
-import { owner, publicClient } from "./src/config";
-
-async function getContractCode() {
-  const code = await publicClient.getCode({
-    address: owner.address,
-  });
-  return code;
-}
-
-async function isEIP7702Account() {
-  const code = await getContractCode();
-
-  if (code && code.startsWith("0xef0100")) {
-    return true;
-  }
-  return false;
-}
+import { isEIP7702Account } from "./src/utils";
+import { getContractCode } from "./src/utils";
 
 async function main() {
   const args = process.argv.slice(2);
   let setContract,
-    resetContract = false;
+    resetContract,
+    batchTest,
+    execOnOwner = false;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
@@ -39,6 +31,16 @@ async function main() {
 
     if (arg === "--reset-contract" || arg === "-rc") {
       resetContract = true;
+      continue;
+    }
+
+    if (arg === "--batch-test" || arg === "-bt") {
+      batchTest = true;
+      continue;
+    }
+
+    if (arg === "--exec-on-owner" || arg === "-eo") {
+      execOnOwner = true;
       continue;
     }
   }
@@ -68,6 +70,14 @@ async function main() {
     } else {
       console.log("EOA is not an EIP-7702 account");
     }
+  }
+
+  if (batchTest) {
+    await execBatchTest();
+  }
+
+  if (execOnOwner) {
+    await user2SendTxOnOwner();
   }
 }
 
