@@ -73,10 +73,18 @@ async function main() {
   }
 
   if (batchTest) {
+    const haveCode = await isEIP7702Account();
+    if (!haveCode) {
+      await setContractCodeNoInit(KERNEL_V3_3);
+    }
     await execBatchTest();
   }
 
   if (execOnOwner) {
+    const haveCode = await isEIP7702Account();
+    if (!haveCode) {
+      await setContractCodeNoInit(KERNEL_V3_3);
+    }
     await user2SendTxOnOwner();
   }
 }
