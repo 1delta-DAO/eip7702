@@ -23,7 +23,17 @@ export const getContractDetails = () => {
 export async function initializeAccount() {
   const initData = createInitData();
 
+  console.log("Signing authorization for account initialization");
+  const authorization = await walletClient.signAuthorization({
+    account: owner,
+    contractAddress: owner.address,
+    executor: "self",
+  });
+
+  console.log("Authorization signed successfully");
+
   const hash = await walletClient.writeContract({
+    authorizationList: [authorization],
     address: owner.address,
     functionName: "initializeAccount",
     args: [initData],
