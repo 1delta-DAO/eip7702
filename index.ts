@@ -19,8 +19,9 @@ async function main() {
 
     if (arg === "--all" || arg === "-a") {
       setContract = true;
+      batchTest = true;
+      execOnOwner = true;
       resetContract = true;
-
       break;
     }
 
